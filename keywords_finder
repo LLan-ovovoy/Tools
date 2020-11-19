@@ -38,16 +38,12 @@ tooshortorlong = data[data['sign'] == 'tooshortorlong']
 nextround = data[data['sign'] == 'nextround'] #用于第二回合
 nextround.reset_index(drop=True, inplace=True)
 
-
 #%%查找关键词
-
 import jieba
 
 a = '/Users/caoyanan/Desktop/Lenovo/code/keywords_screening/dict.txt'
 with open(a, 'r+', encoding='utf-8') as d:
     dictionary = [i[:-1].split(',') for i in d.readlines()] 
-
-
 
 h = len(nextround)
 
@@ -59,7 +55,6 @@ for i in range(0,h):
             nextround['sign'][i] = 'keywords' #标记        
 
 keywords = nextround[nextround['sign'] == 'keywords'] #含有关键词
-
 
 nextround2 = nextround[nextround['sign'] == 'nextround'] #用于第三回合
 nextround2.reset_index(drop=True, inplace=True)
@@ -76,9 +71,6 @@ for i in range(0,k):
             nextround2['sign'][i] = 'repeatwords'
         else:
             nextround2['sign'][i] = 'manual'
-
-          
-            
             
 #%% 拆分dataframe           
 repeatwords = nextround2[nextround2['sign'] == 'repeatwords'] #过度重复
@@ -109,13 +101,11 @@ print('语料去重后总数为:', len(data),
 import pandas as pd
 again = pd.read_csv("/Users/caoyanan/Desktop/Lenovo/code/0513/data2.csv")
 
-
 import jieba
 
 a2 = '/Users/caoyanan/Desktop/Lenovo/code/0513/dict.txt'
 with open(a2, 'r+', encoding='utf-8') as d2:
     dictionary1 = [i[:-1].split(',') for i in d2.readlines()]
-
 
 h2 = len(again)
 
