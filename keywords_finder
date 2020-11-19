@@ -1,0 +1,141 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed May 13 13:50:39 2020
+
+@author: caoyanan
+"""
+
+#%%
+
+import pandas as pd
+
+data = pd.read_csv("/Users/caoyanan/Desktop/Lenovo/data.csv")#打开表格
+
+n = len(data)
+
+#%% 拆分语料
+'''
+data['sign'] = data['payload_result: Descending'].map(lambda x:x.split('\"input\":\"')[1])
+
+data['input'] = data['sign'].map(lambda x:x.split('\",\"domain\":\"')[0])
+
+data.drop_duplicates(subset=['input'],keep='first',inplace=True) 
+data.reset_index(drop=True, inplace=True)
+'''
+#%% 标记过短或过长的语料
+#由于sign列是拆分语料的结果，请确保csv文件中有sign（别的也可保持统一）这一列（可在excel中新建一个列的header）
+
+for i in range(0,n):
+    if len(str(data['input'][i])) < 3 or len(str(data['input'][i])) > 20:
+        data['sign'][i] = 'tooshortorlong'
+    else:
+        data['sign'][i] = 'nextround'
+
+tooshortorlong = data[data['sign'] == 'tooshortorlong']
+   
+     
+nextround = data[data['sign'] == 'nextround'] #用于第二回合
+nextround.reset_index(drop=True, inplace=True)
+
+
+#%%查找关键词
+
+import jieba
+
+a = '/Users/caoyanan/Desktop/Lenovo/code/keywords_screening/dict.txt'
+with open(a, 'r+', encoding='utf-8') as d:
+    dictionary = [i[:-1].split(',') for i in d.readlines()] 
+
+
+
+h = len(nextround)
+
+for i in range(0,h):
+    str2 = str(nextround['input'][i]) 
+    word_list = jieba.cut(str2)
+    for one in word_list: 
+        if one in dictionary[0]: # 判断拆分出的语块是否在语料库dict中，在则标记
+            nextround['sign'][i] = 'keywords' #标记        
+
+keywords = nextround[nextround['sign'] == 'keywords'] #含有关键词
+
+
+nextround2 = nextround[nextround['sign'] == 'nextround'] #用于第三回合
+nextround2.reset_index(drop=True, inplace=True)
+
+#%% 标记内部字符重复三次以上的语料
+
+k = len(nextround2)
+
+for i in range(0,k):      
+    str1 = str(nextround2['input'][i])
+    m = len(str1)
+    for j in range(0,m):
+        if str1.count(str1[j])>2:
+            nextround2['sign'][i] = 'repeatwords'
+        else:
+            nextround2['sign'][i] = 'manual'
+
+          
+            
+            
+#%% 拆分dataframe           
+repeatwords = nextround2[nextround2['sign'] == 'repeatwords'] #过度重复
+manual = nextround2[nextround2['sign'] == 'manual'] #人工过滤
+
+#%% 导出csv
+
+#outputpath1="/Users/caoyanan/Desktop/Lenovo/code/keywords_screening/0tooshortorlong.csv"
+#tooshortorlong.to_csv(outputpath1,sep=',' , index=False , header = True, encoding='utf_8_sig')
+
+outputpath2="/Users/caoyanan/Desktop/Lenovo/code/keywords_screening/0keywords.csv" #导出路径
+keywords.to_csv(outputpath2,sep=',' , index=False , header = True, encoding='utf_8_sig') #导出
+
+#outputpath3="/Users/caoyanan/Desktop/Lenovo/code/keywords_screening/0repeatwords.csv"
+#repeatwords.to_csv(outputpath3,sep=',' , index=False , header = True, encoding='utf_8_sig')
+
+outputpath4="/Users/caoyanan/Desktop/Lenovo/code/keywords_screening/0manual.csv"
+manual.to_csv(outputpath4,sep=',' , index=False , header = True, encoding='utf_8_sig')
+
+print('语料去重后总数为:', len(data),
+      '\n存在关键词语料数:', len(keywords),
+      '\n长度极端短语料数:', len(tooshortorlong), 
+      '\n过度重复语料数:', len(repeatwords),
+      '\n需要人工过滤语料数:', len(manual)) #汇报
+
+#%% 完善语料库之后可以单独对某一个文档进行
+'''
+import pandas as pd
+again = pd.read_csv("/Users/caoyanan/Desktop/Lenovo/code/0513/data2.csv")
+
+
+import jieba
+
+a2 = '/Users/caoyanan/Desktop/Lenovo/code/0513/dict.txt'
+with open(a2, 'r+', encoding='utf-8') as d2:
+    dictionary1 = [i[:-1].split(',') for i in d2.readlines()]
+
+
+h2 = len(again)
+
+for i in range(0,h2):
+    str2 = str(again['input'][i])
+    word_list = jieba.cut(str2)
+    for one in word_list:
+        if one in dictionary1[0]:
+            again['sign'][i] = 'keywords2'          
+
+keywords2 = again[again['sign'] == 'keywords2']
+
+outputpath0="/Users/caoyanan/Desktop/Lenovo/code/0513/keywords.csv"
+keywords2.to_csv(outputpath0,sep=',' , index=False , header = True, encoding='utf_8_sig')
+
+'''
+
+
+
+
+
+
+
