@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu May 14 16:45:13 2020
+
+@author: caoyanan
+"""
+
+#%% 合并csv
+
+import glob
+import pandas as pd
+
+#首先在当前文件夹中新建一个result.csv
+
+result = open('result.csv', "r+")
+result.truncate() #清空存放合并后数据的csv文档
+
+csvx_list = glob.glob('/Users/caoyanan/Desktop/canada/apps/data/*.csv') 
+outputpath = "/Users/caoyanan/Desktop/canada/apps/all.csv"
+
+n = len(csvx_list)
+print(u'共发现%s个CSV文件'% n) #查看文件夹下的csv文件数
+
+#%%
+
+print('正在处理............')
+for i in csvx_list:
+    fr = open(i,'r').read()
+    with open('result.csv','a') as f:
+        f.write(fr)
+    
+    print('写入成功！')
+print('%s个文件写入完毕！'% n)
+
+#%% 去重转码
+
+data = pd.read_csv("result.csv",header = 0, error_bad_lines = False) #读取
+# 如果文件中有报错行（取文件时遇到和列数不对应的行,此时会报错），则会被跳过，导致行数减少
+
+
+#%%
+data.drop(data[data.Title =='URL'].index, inplace=True) #删除多余的header
+#outputpath = "/Users/caoyanan/Desktop/Lenovo/code/merge_csv/data1.csv" #导出转码后的 raw data
+data.to_csv(outputpath, sep=',' , index=False , header = True, encoding='utf_8_sig')
+
+
+
