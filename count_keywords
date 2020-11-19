@@ -1,0 +1,31 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Thu May 21 15:11:19 2020
+
+@author: caoyanan
+"""
+
+import pandas as pd
+
+data = pd.read_csv("/Users/caoyanan/Desktop/Lenovo/code/action_count/data.csv",header = 0) #读取
+
+print(len(data))
+#%%
+
+a = data['action']
+
+result = {}
+for key in a:
+    result[key] = result.get(key, 0) + 1
+print(result)
+
+
+#%%
+count = pd.DataFrame.from_dict(result, orient='index',columns=['count'])
+count = count.reset_index().rename(columns = {'index':'action'})
+
+outputpath = "/Users/caoyanan/Desktop/Lenovo/code/action_count/count.csv" #导出转码后的 raw data
+count.to_csv(outputpath, sep=',' , index=False , header = True, encoding='utf_8_sig')
+
+
